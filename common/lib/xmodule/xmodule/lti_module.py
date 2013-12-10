@@ -48,7 +48,6 @@ from webob import Response
 import mock
 from xml.sax.saxutils import escape
 
-from django.conf import settings
 from xmodule.editing_module import MetadataOnlyEditingDescriptor
 from xmodule.raw_module import EmptyDataRawDescriptor
 from xmodule.x_module import XModule, module_attr
