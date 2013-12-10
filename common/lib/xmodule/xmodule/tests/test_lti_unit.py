@@ -318,7 +318,7 @@ class LTIModuleTest(LogicTest):
         Test if OAuth signing was successful.
         """
         try:
-            self.xmodule.verify_oauth_body_sign(self.get_signed_mock_request())
+            self.xmodule.verify_oauth_body_sign(self.get_signed_grade_mock_request())
         except LTIError:
             self.fail("verify_oauth_body_sign() raised LTIError unexpectedly!")
 
@@ -329,7 +329,7 @@ class LTIModuleTest(LogicTest):
         Oauth signing verify fail.
         """
         with self.assertRaises(LTIError):
-            req = self.get_signed_mock_request()
+            req = self.get_signed_grade_mock_request()
             self.xmodule.verify_oauth_body_sign(req)
 
     def get_signed_grade_mock_request(self):
