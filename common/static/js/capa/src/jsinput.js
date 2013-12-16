@@ -6,7 +6,7 @@
  * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Same_origin_policy_for_JavaScript
  */    
 
-(function (jsinput, undefined) {
+(function ($, undefined) {
     // Initialize js inputs on current page.
     // N.B.: No library assumptions about the iframe can be made (including,
     // most relevantly, jquery). Keep in mind what happens in which context
@@ -18,21 +18,6 @@
     // constructor only runs once for each iframe; but we also want to make
     // sure that if part of the page is reloaded (e.g., a problem is
     // submitted), the constructor is called again.
-
-    if (!jsinput) {
-        jsinput = {
-            runs : 1,
-            arr : [],
-            exists : function(id) {
-                jsinput.arr.filter(function(e, i, a) {
-                    return e.id = id;
-                });
-            }
-        };
-    }
-
-    jsinput.runs++;
-
 
     /*                      Utils                               */
 
@@ -71,11 +56,8 @@
         var path = thisIFrame.src.substring(0,
                                             thisIFrame.src.lastIndexOf("/")+1);
         // Get the hidden input field to pass to customresponse
-        function _inputField() {
-            var parent = $(spec.elem).parent();
-            return parent.find('input[id^="input_"]');
-        }
-        var inputField = _inputField();
+        var parent = $(spec.elem).parent();
+        var inputField = parent.find('input[id^="input_"]');
 
         // Get the grade function name
         var getGradeFn = sectAttr("data");
@@ -160,8 +142,6 @@
 
         /*                      Initialization                          */
 
-        jsinput.arr.push(that);
-
         // Put the update function as the value of the inputField's "waitfor"
         // attribute so that it is called when the check button is clicked.
         function bindCheck() {
@@ -227,7 +207,7 @@
 
 
     function walkDOM() {
-        var newid;
+        var newid, dataProcessed;
 
         // Find all jsinput elements, and create a jsinput object for each one
         var all = $(document).find('section[class="jsinput"]');
@@ -235,13 +215,13 @@
         all.each(function(index, value) {
             // Get just the mako variable 'id' from the id attribute
             newid = $(value).attr("id").replace(/^inputtype_/, "");
-
-
-            if (!jsinput.exists(newid)){
-                var newJsElem = jsinputConstructor({
+            dataProcessed = ($(value).attr("data-processed") === "true");
+            if (!dataProcessed) {
+               var newJsElem = jsinputConstructor({
                     id: newid,
                     elem: value,
                 });
+                $(value).attr("data-processed", 'true');
             }
         });
     }
@@ -254,4 +234,4 @@
         $(document).ready(setTimeout(walkDOM, 300));
     }
 
-})(window.jsinput = window.jsinput || false);
+})(window.jQuery);
