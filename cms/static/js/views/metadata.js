@@ -330,57 +330,40 @@ function(Backbone, _, MetadataModel, AbstractEditor, VideoList) {
             }
         },
 
-        parseTime : function (value) {
-            var pad = 0,
-                // Removes all white-spaces and splits by `:`.
-                timeList = value.replace(/\s+/g, '').split(':'),
-                timeDict = [
-                    {
-                        name: 'seconds',
-                        value: timeList.pop(),
-                        max: 59
-                    },
-                    {
-                        name: 'minutes',
-                        value: timeList.pop(),
-                        max: 59
-                    },
-                    {
-                        name: 'hours',
-                        value: timeList.pop(),
-                        max: 23
+        parseTime: function (value) {
+            var seconds = (function (value) {
+                    // Removes all white-spaces and splits by `:`.
+                    var list = value.replace(/\s+/g, '').split(':'),
+                        normalize = function (value) {
+                            var number = parseInt(value, 10) || 0;
+
+                            return (number < 0) ? 0 : number;
+                        },
+                        maxTimeInSeconds = 24 * 60 * 60 - 1,
+                        seconds = normalize(list.pop()),
+                        minutes = normalize(list.pop()),
+                        hours = normalize(list.pop());
+
+                        seconds += minutes * 60 + hours * 60 * 60;
+
+                    if (seconds > maxTimeInSeconds) {
+                        return maxTimeInSeconds;
+                    } else {
+                        return seconds;
                     }
-                ],
-                overtime = false;
+                }(value)),
+                // multiply by 1000 because Date() requires milliseconds
+                date = new Date(seconds * 1000),
+                hh = date.getUTCHours(),
+                mm = date.getUTCMinutes(),
+                ss = date.getUTCSeconds(),
+                // This function ensure you have two-digits
+                pad = function (number) {
+                    return (number < 10) ? "0" + number : number;
+                };
 
-            results = $.map(timeDict, function (data, index) {
-                // Converts `data.value` (string) to positive number.
-                // If `parseInt` returns NaN, 0 will be used.
-                var value = parseInt(data.value, 10) || 0,
-                    name = data.name,
-                    max = data.max,
-                    mod = data.max + 1;
-
-                value = (value < 0) ? 0 : value;
-
-                if (pad > 0) {
-                    value += pad;
-                }
-
-                if (name === 'hours') {
-                    if (value > max) {
-                        overtime = true;
-                    }
-                } else {
-                    // do that just for seconds and minutes.
-                    pad = Math.floor(value/mod);
-                    value %= mod;
-                }
-
-                return (String(value).length > 1) ? value: '0' + value;
-            });
-
-            return overtime ? '23:59:59' : results.reverse().join(':');
+            // This formats your string to HH:MM:SS
+            return pad(hh) + ":" + pad(mm) + ":" + pad(ss);
         },
 
         setValueInEditor : function (value) {
