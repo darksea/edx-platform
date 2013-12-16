@@ -102,6 +102,7 @@ class LTIModuleTest(LogicTest):
     def test_authorization_header_not_present(self):
         """
         Request has no Authorization header.
+
         This is an unknown service request, i.e., it is not a part of the original service specification.
         """
         request = Request(self.environ)
@@ -121,6 +122,7 @@ class LTIModuleTest(LogicTest):
     def test_authorization_header_empty(self):
         """
         Request Authorization header has no value.
+
         This is an unknown service request, i.e., it is not a part of the original service specification.
         """
         request = Request(self.environ)
@@ -134,7 +136,6 @@ class LTIModuleTest(LogicTest):
             'description': 'The request has failed.',
             'messageIdentifier': self.DEFAULTS['messageIdentifier'],
         }
-
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(expected_response, real_response)
 
@@ -153,7 +154,6 @@ class LTIModuleTest(LogicTest):
             'description': 'The request has failed.',
             'messageIdentifier': 'unknown',
         }
-
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(expected_response, real_response)
 
@@ -172,7 +172,6 @@ class LTIModuleTest(LogicTest):
             'description': 'The request has failed.',
             'messageIdentifier': 'unknown',
         }
-
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(expected_response, real_response)
 
@@ -192,7 +191,6 @@ class LTIModuleTest(LogicTest):
             'description': 'Target does not support the requested operation.',
             'messageIdentifier': self.DEFAULTS['messageIdentifier'],
         }
-
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(expected_response, real_response)
 
@@ -205,7 +203,6 @@ class LTIModuleTest(LogicTest):
         request = Request(self.environ)
         request.body = self.get_request_body()
         response = self.xmodule.grade_handler(request, '')
-        code_major, description, messageIdentifier, action = self.get_response_values(response)
         description_expected = 'Score for {sourcedId} is now {score}'.format(
                 sourcedId=self.DEFAULTS['sourcedId'],
                 score=self.DEFAULTS['grade'],
@@ -231,15 +228,8 @@ class LTIModuleTest(LogicTest):
                 host=self.xmodule.runtime.hostname,
                 path=self.xmodule.runtime.handler_url(self.xmodule, 'grade_handler', thirdparty=True).rstrip('/?')
             )
-
         real_outcome_service_url = self.xmodule.get_outcome_service_url()
         self.assertEqual(real_outcome_service_url, expected_outcome_service_url)
-
-    def test_get_form_path(self):
-        expected_form_path = self.xmodule.runtime.handler_url(self.xmodule, 'preview_handler').rstrip('/?')
-
-        real_form_path = self.xmodule.get_form_path()
-        self.assertEqual(real_form_path, expected_form_path)
 
     def test_resource_link_id(self):
         with patch('xmodule.lti_module.LTIModule.id', new_callable=PropertyMock) as mock_id:
@@ -247,7 +237,6 @@ class LTIModuleTest(LogicTest):
             expected_resource_link_id = unicode(urllib.quote(self.module_id))
             real_resource_link_id = self.xmodule.get_resource_link_id()
             self.assertEqual(real_resource_link_id, expected_resource_link_id)
-
 
     def test_lis_result_sourcedid(self):
         with patch('xmodule.lti_module.LTIModule.id', new_callable=PropertyMock) as mock_id:
@@ -262,7 +251,6 @@ class LTIModuleTest(LogicTest):
         """
         LTI module gets client key and secret provided.
         """
-
         #this adds lti passports to system
         mocked_course = Mock(lti_passports = ['lti_id:test_client:test_secret'])
         modulestore = Mock()
@@ -379,28 +367,6 @@ class LTIModuleTest(LogicTest):
         self.xmodule.oauth_params = Mock()
         with self.assertRaises(LTIError):
             self.xmodule.get_input_fields()
-
-    def test_handle_ajax(self):
-        dispatch = 'regenerate_signature'
-        data = ''
-        self.xmodule.get_input_fields = Mock(return_value={'test_input_field_key': 'test_input_field_value'})
-        json_dump = self.xmodule.handle_ajax(dispatch, data)
-        expected_json_dump = '{"input_fields": {"test_input_field_key": "test_input_field_value"}}'
-        self.assertEqual(
-            json.loads(json_dump),
-            json.loads(expected_json_dump)
-        )
-
-    def test_handle_ajax_bad_dispatch(self):
-        dispatch = 'bad_dispatch'
-        data = ''
-        self.xmodule.get_input_fields = Mock(return_value={'test_input_field_key': 'test_input_field_value'})
-        json_dump = self.xmodule.handle_ajax(dispatch, data)
-        expected_json_dump = '{"error": "[handle_ajax]: Unknown Command!"}'
-        self.assertEqual(
-            json.loads(json_dump),
-            json.loads(expected_json_dump)
-        )
 
     def test_max_score(self):
         self.xmodule.weight = 100.0

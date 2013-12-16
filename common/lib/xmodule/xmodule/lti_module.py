@@ -259,12 +259,8 @@ class LTIModule(LTIFields, XModule):
             'element_class': self.category,
             'open_in_a_new_page': self.open_in_a_new_page,
             'display_name': self.display_name,
-            'form_url': self.get_form_path(),
+            'form_url': self.runtime.handler_url(self, 'preview_handler').rstrip('/?'),
         }
-
-
-    def get_form_path(self):
-        return  self.runtime.handler_url(self, 'preview_handler').rstrip('/?')
 
     def get_html(self):
         """
@@ -272,24 +268,13 @@ class LTIModule(LTIFields, XModule):
         """
         return self.system.render_template('lti.html', self.get_context())
 
-    def get_form(self):
-        """
-        Renders parameters to form template.
-        """
-        return self.system.render_template('lti_form.html', self.get_context())
-
     @XBlock.handler
-    def preview_handler(self, request, dispatch):
+    def preview_handler(self, _, __):
         """
-        Ajax handler.
-
-        Args:
-            dispatch: string request slug
-
-        Returns:
-            json string
+        This is called to get context with new oauth params to iframe.
         """
-        return Response(self.get_form(), content_type='text/html')
+        template = self.system.render_template('lti_form.html', self.get_context())
+        return Response(template, content_type='text/html')
 
     def get_user_id(self):
         user_id = self.runtime.anonymous_student_id
