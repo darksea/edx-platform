@@ -299,14 +299,18 @@ class LTIModule(LTIFields, XModule):
     def get_outcome_service_url(self):
         """
         Return URL for storing grades.
+
+        To test LTI on sandbox we must use http scheme.
+
+        While testing locally and on Jenkins, mock_lti_server use http.referer
+        to obtain scheme, so it is ok to have http(s) anyway.
         """
-        # To test LTI on sandbox we must use http scheme.
         scheme = 'http' if 'sandbox' in self.system.hostname else 'https'
         uri = '{scheme}://{host}{path}'.format(
-                scheme=scheme,
-                host=self.system.hostname,
-                path=self.runtime.handler_url(self, 'grade_handler', thirdparty=True).rstrip('/?')
-            )
+            scheme=scheme,
+            host=self.system.hostname,
+            path=self.runtime.handler_url(self, 'grade_handler', thirdparty=True).rstrip('/?')
+        )
         return uri
 
     def get_resource_link_id(self):
