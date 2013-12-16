@@ -350,22 +350,27 @@ function(Backbone, _, MetadataModel, AbstractEditor, VideoList) {
                         value: timeList.pop(),
                         max: 23
                     }
-                ];
+                ],
+                overtime = false;
 
             results = $.map(timeDict, function (data, index) {
                 // Converts `data.value` (string) to positive number.
                 // If `parseInt` returns NaN, 0 will be used.
-                var value = Math.abs(parseInt(data.value, 10)) || 0,
+                var value = parseInt(data.value, 10) || 0,
                     name = data.name,
                     max = data.max,
                     mod = data.max + 1;
+
+                value = (value < 0) ? 0 : value;
 
                 if (pad > 0) {
                     value += pad;
                 }
 
                 if (name === 'hours') {
-                    value = (value > max) ? max : value;
+                    if (value > max) {
+                        overtime = true;
+                    }
                 } else {
                     // do that just for seconds and minutes.
                     pad = Math.floor(value/mod);
@@ -375,7 +380,7 @@ function(Backbone, _, MetadataModel, AbstractEditor, VideoList) {
                 return (String(value).length > 1) ? value: '0' + value;
             });
 
-            return results.reverse().join(':');
+            return overtime ? '23:59:59' : results.reverse().join(':');
         },
 
         setValueInEditor : function (value) {
